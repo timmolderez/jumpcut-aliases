@@ -45,14 +45,15 @@ fn main() -> Result<(),io::Error> {
             if args_ok(&args, 2) {
                 let abs_pwd = absolute_path(env::current_dir().unwrap());
                 let cmd = args[3..].join(" ");
-                return add_alias(&args[2], &format!("cd {};{}", abs_pwd, cmd));
+                return add_alias(&args[2], &format!("cd \"{}\";{}", abs_pwd, cmd));
             }
         }
 
         "addpath" => {
             if args_ok(&args, 2) {
-                let abs_path = absolute_path(PathBuf::from(args[3].clone()));
-                return add_alias(&args[2], &format!("cd {}", abs_path));
+                let path = args[3..].join(" ");
+                let abs_path = absolute_path(PathBuf::from(path));
+                return add_alias(&args[2], &format!("cd \"{}\"", abs_path));
             }
         }
 
@@ -65,7 +66,7 @@ fn main() -> Result<(),io::Error> {
 
         "rm" => {
             if args_ok(&args, 1) {
-                return remove_alias(&args[2]);
+                remove_alias(&args[2])?;
             }
         },
 
