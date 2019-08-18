@@ -6,7 +6,7 @@ Jumpcut is a utility for your terminal that lets you define aliases/shortcuts to
 - Quickly defining aliases that navigate to a given folder
 - Defining parametrized aliases
 
-Jumpcut is available for Bash (Linux/OS X) and Powershell (Windows), and can be easily ported to support other shells as well.
+Jumpcut is available for Bash (Linux/OS X) and Powershell (Windows), and can be easily ported to support other shells.
 
 - [Installation](#installation)
   - [Bash](#bash)
