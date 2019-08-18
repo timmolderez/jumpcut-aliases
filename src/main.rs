@@ -3,11 +3,12 @@ use std::io;
 extern crate dialoguer;
 extern crate dirs;
 use std::path::PathBuf;
-mod alias;
+pub mod alias;
 mod utils;
 use utils::*;
 use alias::Alias;
 use dialoguer::{Confirmation, Select};
+
 use std::fs;
 
 /// Jumpcut - a command-line utility to quickly access frequently-used commands/folders
@@ -45,7 +46,7 @@ fn main() -> Result<(),io::Error> {
             if args_ok(&args, 2) {
                 let abs_pwd = absolute_path(env::current_dir().unwrap());
                 let cmd = args[3..].join(" ");
-                return add_alias(&args[2], &format!("cd \"{}\";{}", abs_pwd, cmd));
+                return add_alias(&args[2], &format!("cd \"{}\";{};cd $prev", abs_pwd, cmd));
             }
         }
 
@@ -61,6 +62,12 @@ fn main() -> Result<(),io::Error> {
             if args_ok(&args, 2) {
                 let desc = args[3..].join(" ");
                 return add_description(&args[2], &desc);
+            }
+        }
+
+        "confirm" => {
+            if args_ok(&args, 2) {
+                return set_confirmation(&args[2], &args[3]=="true");
             }
         }
 
@@ -85,6 +92,7 @@ fn is_reserved_keyword(a: &String) -> bool {
         || a == "addwd"
         || a == "addpath"
         || a == "desc"
+        || a == "confirm"
         || a == "rm";
 }
 
@@ -163,7 +171,19 @@ fn find_and_exec_alias(alias: &String, args: Vec<String>) -> io::Result<()> {
 fn exec_alias(alias: &String, args: Vec<String>) {
     let path = config_path().join(alias);
     match Alias::read(&alias, &path) {
-        Ok(al) => al.execute(args),
+        Ok(al) => {
+            if al.must_confirm() {
+                match Confirmation::new()
+            .default(false)
+            .with_text(&format!("Execute alias \"{}\"?", alias)[..])
+            .interact() {
+            Ok(_v) => al.execute(args),
+            Err(_v) => (),
+        }
+            } else {
+                al.execute(args);
+            }
+            },
         Err(e) => error(&e.to_string()),
     }
 }
@@ -174,16 +194,13 @@ fn add_alias(alias: &String, cmd: &String) -> io::Result<()> {
         return Err(io::Error::new(io::ErrorKind::Other, "Reserved keyword."));
     }
 
-    let al = Alias::new(alias.clone(), cmd.clone(), "".to_string());
+    let al = Alias::new(alias.clone(), cmd.clone(), "".to_string(), false);
     let path = config_path().join(alias);
     if path.exists() {
         match Confirmation::new()
             .with_text("Overwrite existing alias?")
-            .interact()
-        {
-            Ok(_v) => {
-                return al.write(&path);
-            }
+            .interact() {
+            Ok(_v) => al.write(&path),
             Err(_v) => Ok(()),
         }
     } else {
@@ -193,8 +210,15 @@ fn add_alias(alias: &String, cmd: &String) -> io::Result<()> {
 
 fn add_description(alias: &String, description: &String) -> io::Result<()> {
     let path = config_path().join(alias);
+    let al = Alias::read(&alias, &config_path().join(alias))?;
+    let new_al = al.update_description(description.clone());
+    return new_al.write(&path);
+}
+
+fn set_confirmation(alias: &String, confirm: bool) -> io::Result<()> {
+    let path = config_path().join(alias);
     let al = Alias::read(&alias, &path)?;
-    let new_al = Alias::new(alias.clone(), al.get_command().clone(), description.clone());
+    let new_al = al.update_confirm(confirm);
     return new_al.write(&path);
 }
 

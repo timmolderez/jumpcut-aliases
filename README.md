@@ -53,7 +53,7 @@ TODO
 
 ## Usage
 
-### Quick overview
+### Overview
 
 `j`  - Print usage message
 
