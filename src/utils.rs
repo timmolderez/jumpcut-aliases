@@ -1,12 +1,13 @@
 use std::path::PathBuf;
 use std::fs;
 
-/// Returns path to config directory
-pub fn config_path() -> PathBuf {
+/// Returns the path to config directory
+pub fn alias_path() -> PathBuf {
     let home = dirs::home_dir().unwrap_or_default();
     return home.join(".jumpcut");
 }
 
+/// Converts a `PathBuf` path to its absolute `String` representation
 pub fn absolute_path(path: &PathBuf) -> String {
     match fs::canonicalize(path) {
         Ok(v) => {
@@ -29,6 +30,9 @@ pub fn absolute_path(path: &PathBuf) -> String {
     }
 }
 
+/// Check the length of the given argument list
+/// 
+/// If the length is not as expected, false is returned and an error is printed.
 pub fn args_ok(args: &Vec<String>, num: usize) -> bool {
     if args.len() >= num + 2 {
         return true;
@@ -39,6 +43,7 @@ pub fn args_ok(args: &Vec<String>, num: usize) -> bool {
     }
 }
 
+/// Prints an error message to stderr
 pub fn error(err: &str) {
     eprintln!("Error: {}", err);
 }
