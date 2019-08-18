@@ -1,5 +1,7 @@
 # Jumpcut - terminal alias manager
 
+<img src="https://raw.githubusercontent.com/timmolderez/jumpcut/master/jumpcut.png" alt="Jumpcut logo">
+
 Jumpcut is a utility for your terminal that lets you define aliases/shortcuts to quickly access folders or run commands. If you're familiar with the `alias` command, Jumpcut is similar, but provides some additional conveniences such as:
 - Adding permanent aliases (without editing any .profile files)
 - Executing an alias by only typing part of its name
@@ -64,7 +66,7 @@ function j {
 - This snippet defines the `j` Powershell function that is used to invoke Jumpcut. If you'd like to invoke Jumpcut with another name than `j`, simply change the function name.
 - Make sure to adjust the `$jumpcut_bin = 'C:\jumpcut.exe'` line so it points to the path where you downloaded the Jumpcut binary!
 - Save the file.
-- All done! The next time you open up a terminal, Jumpcut will be ready for use.
+- All done! The next time you open up a Powershell window, Jumpcut will be ready for use.
 
 ## Usage
 
@@ -122,7 +124,7 @@ Aliases can also be parametrized using `$1`, `$2`, `$3`, etc.<br />
 
 #### `j addpath`
 
-The `j addpath` command defines an alias that will navigate to the given folder:
+The `j addpath` command defines an alias that will navigate to a given folder:
 
 *Define alias `q2` that navigates to folder `~/Documents/Git/Quake-2`*
 ```bash
