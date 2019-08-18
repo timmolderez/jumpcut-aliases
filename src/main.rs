@@ -150,7 +150,10 @@ fn find_and_exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
         
         let match_vec: Vec<String> = matches.collect();
         match match_vec.len() {
-            0 => exec_nothing(),
+            0 => {
+                error("no matching aliases found.");
+                exec_nothing();
+            },
             1 => {
                 exec_alias(&match_vec[0], args)?;
             },
@@ -233,7 +236,7 @@ fn remove_alias(alias: &str) -> io::Result<()> {
     if path.exists() {
         return fs::remove_file(path);
     } else {
-        error(&format!("There is no alias named \"{}\".", alias));
+        error(&format!("there is no alias named \"{}\".", alias));
         return Err(io::Error::new(io::ErrorKind::NotFound, "Alias not found."));
     }
 }
