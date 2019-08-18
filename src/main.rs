@@ -44,7 +44,7 @@ fn main() -> Result<(),io::Error> {
 
         "addwd" => {
             if args_ok(&args, 2) {
-                let abs_pwd = absolute_path(env::current_dir().unwrap());
+                let abs_pwd = absolute_path(&env::current_dir().unwrap());
                 let cmd = args[3..].join(" ");
                 return add_alias(&args[2], &format!("cd \"{}\";{};cd $prev", abs_pwd, cmd));
             }
@@ -53,7 +53,7 @@ fn main() -> Result<(),io::Error> {
         "addpath" => {
             if args_ok(&args, 2) {
                 let path = args[3..].join(" ");
-                let abs_path = absolute_path(PathBuf::from(path));
+                let abs_path = absolute_path(&PathBuf::from(path));
                 return add_alias(&args[2], &format!("cd \"{}\"", abs_path));
             }
         }
@@ -85,7 +85,7 @@ fn main() -> Result<(),io::Error> {
     return Ok(());
 }
 
-fn is_reserved_keyword(a: &String) -> bool {
+fn is_reserved_keyword(a: &str) -> bool {
     return a == "is_exec_action"
         || a == "list"
         || a == "add"
@@ -119,19 +119,14 @@ fn list_aliases() -> io::Result<()> {
         let entry = entry?;
         let fname = entry.file_name();
         let path = config_path().join(fname);
-        let fname_str = entry
-            .file_name()
-            .as_os_str()
-            .to_os_string()
-            .into_string()
-            .unwrap();
+        let fname_str = entry.file_name().into_string().unwrap();
         let al = Alias::read(&fname_str, &path)?;
         println!("{}", al.to_string(alias_len));
     }
     return Ok(());
 }
 
-fn find_and_exec_alias(alias: &String, args: Vec<String>) -> io::Result<()> {
+fn find_and_exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
     let path = config_path().join(alias);
     if path.exists() {
         exec_alias(alias, args);
@@ -168,7 +163,7 @@ fn find_and_exec_alias(alias: &String, args: Vec<String>) -> io::Result<()> {
     return Ok(());
 }
 
-fn exec_alias(alias: &String, args: Vec<String>) {
+fn exec_alias(alias: &str, args: Vec<String>) {
     let path = config_path().join(alias);
     match Alias::read(&alias, &path) {
         Ok(al) => {
@@ -188,13 +183,13 @@ fn exec_alias(alias: &String, args: Vec<String>) {
     }
 }
 
-fn add_alias(alias: &String, cmd: &String) -> io::Result<()> {
+fn add_alias(alias: &str, cmd: &str) -> io::Result<()> {
     if is_reserved_keyword(alias) {
         error(&format!("\"{}\" cannot be used as an alias name; it is a reserved keyword.", alias));
         return Err(io::Error::new(io::ErrorKind::Other, "Reserved keyword."));
     }
 
-    let al = Alias::new(alias.clone(), cmd.clone(), "".to_string(), false);
+    let al = Alias::new(alias.clone(), cmd.clone(), "", false);
     let path = config_path().join(alias);
     if path.exists() {
         match Confirmation::new()
@@ -208,21 +203,21 @@ fn add_alias(alias: &String, cmd: &String) -> io::Result<()> {
     }
 }
 
-fn add_description(alias: &String, description: &String) -> io::Result<()> {
+fn add_description(alias: &str, description: &str) -> io::Result<()> {
     let path = config_path().join(alias);
     let al = Alias::read(&alias, &config_path().join(alias))?;
     let new_al = al.update_description(description.clone());
     return new_al.write(&path);
 }
 
-fn set_confirmation(alias: &String, confirm: bool) -> io::Result<()> {
+fn set_confirmation(alias: &str, confirm: bool) -> io::Result<()> {
     let path = config_path().join(alias);
     let al = Alias::read(&alias, &path)?;
     let new_al = al.update_confirm(confirm);
     return new_al.write(&path);
 }
 
-fn remove_alias(alias: &String) -> io::Result<()> {
+fn remove_alias(alias: &str) -> io::Result<()> {
     let path = config_path().join(alias);
     if path.exists() {
         return fs::remove_file(path);

@@ -7,7 +7,7 @@ pub fn config_path() -> PathBuf {
     return home.join(".jumpcut");
 }
 
-pub fn absolute_path(path: PathBuf) -> String {
+pub fn absolute_path(path: &PathBuf) -> String {
     match fs::canonicalize(path) {
         Ok(v) => {
             let abs_path = v.into_os_string().into_string().unwrap();
@@ -18,11 +18,12 @@ pub fn absolute_path(path: PathBuf) -> String {
                 The only caveat to normal paths is that they usually have a 260 max. character limit: 
                 https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#maximum-path-length-limitation */
                 return abs_path[4..].to_string();
+            } else {
+                return abs_path;
             }
-            return abs_path;
         },
         Err(_v) => {
-            error(&String::from("the provided path does not exist"));
+            error("the provided path does not exist");
             panic!();
         }
     }
@@ -38,8 +39,8 @@ pub fn args_ok(args: &Vec<String>, num: usize) -> bool {
     }
 }
 
-pub fn error(err: &String) {
-    println!("Error: {}", err);
+pub fn error(err: &str) {
+    eprintln!("Error: {}", err);
 }
 
 /// Prints usage message

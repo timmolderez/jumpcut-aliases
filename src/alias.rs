@@ -14,16 +14,16 @@ pub struct Alias {
 }
 
 impl Alias {
-  pub fn new(alias: String, cmd: String, description: String, confirm: bool) -> Alias {
-    return Alias{alias: alias, command: cmd, description: description, confirm: confirm};
+  pub fn new(alias: &str, cmd: &str, description: &str, confirm: bool) -> Alias {
+    return Alias{alias: alias.to_string(), command: cmd.to_string(), description: description.to_string(), confirm: confirm};
   }
 
-  pub fn get_alias(&self) -> &String {return &self.alias;}
-  pub fn get_command(&self) -> &String {return &self.command;}
-  pub fn get_description(&self) -> &String {return &self.description;}
+  pub fn get_alias(&self) -> &str {return &self.alias;}
+  pub fn get_command(&self) -> &str {return &self.command;}
+  pub fn get_description(&self) -> &str {return &self.description;}
 
-  pub fn update_description(self, description: String) -> Alias {
-    return Alias{description: description.clone() , ..self};
+  pub fn update_description(self, description: &str) -> Alias {
+    return Alias{description: description.to_string() , ..self};
   }
   pub fn update_confirm(self, confirm: bool) -> Alias {
     return Alias{confirm: confirm , ..self};
@@ -31,7 +31,7 @@ impl Alias {
 
   pub fn must_confirm(&self) -> bool {return self.confirm;}
 
-  pub fn read(alias: &String, path: &Path) -> Result<Alias, Error> {
+  pub fn read(alias: &str, path: &Path) -> Result<Alias, Error> {
     let f = File::open(path)?;
     let f = BufReader::new(f);
     let confirm_default = false;
@@ -40,13 +40,13 @@ impl Alias {
     let lines = lines.unwrap_or_default();
     return match lines.len() {
       0 => Err(Error::new(ErrorKind::Other, format!("Empty or invalid alias file: {}", alias))),
-      1 => Ok(Alias::new(alias.clone(), lines[0].clone(), "".to_string(), confirm_default)),
-      2 => Ok(Alias::new(alias.clone(), lines[0].clone(), lines[1].clone(), confirm_default)),
+      1 => Ok(Alias::new(alias, &*lines[0], "", confirm_default)),
+      2 => Ok(Alias::new(alias, &*lines[0], &*lines[1], confirm_default)),
       3 => {
         let confirm = lines[2] == "confirm";
-        return Ok(Alias::new(alias.clone(), lines[0].clone(), lines[1].clone(), confirm));
+        return Ok(Alias::new(alias.clone(), &*lines[0], &*lines[1], confirm));
       }
-      _ => Ok(Alias::new(alias.clone(), lines[0].clone(), lines[1].clone(), confirm_default)),
+      _ => Ok(Alias::new(alias.clone(), &*lines[0], &*lines[1], confirm_default)),
     };
   }
 
@@ -59,7 +59,7 @@ impl Alias {
   pub fn execute(&self, args:Vec<String>) {
     // If the command contains "$prev", this should be substitued for the current working directory
     let command_template = if self.command.ends_with("$prev") {
-      let abs_pwd = absolute_path(env::current_dir().unwrap());
+      let abs_pwd = absolute_path(&env::current_dir().unwrap());
       let formatted_pwd = &format!("\"{}\"", abs_pwd)[..];
       self.command.replace("$prev", formatted_pwd)
     } else {
