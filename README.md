@@ -9,8 +9,8 @@ Jumpcut is a utility for your terminal that lets you define aliases/shortcuts to
 Jumpcut is available for Bash (Linux/OS X) and Powershell (Windows), and can be easily ported to support other shells.
 
 - [Installation](#installation)
-  - [Bash](#bash)
-  - [Powershell](#powershell)
+  - [Bash (Linux / Mac OS X)](#bash-linux--mac-os-x)
+  - [Powershell (Windows)](#powershell-windows)
 - [Usage](#usage)
   - [Overview](#overview)
   - [Adding aliases](#adding-aliases)
@@ -19,11 +19,9 @@ Jumpcut is available for Bash (Linux/OS X) and Powershell (Windows), and can be 
 
 ## Installation
 
+### Bash (Linux / Mac OS X)
+
 - [Download](http://timmolderez.be/builds/jumpcut/) the Jumpcut binary. (If there is no release for your platform, you can also [compile](#development) Jumpcut.)
-- Modify your shell's "profile" file, the script that is executed every time you open a new terminal window. The exact instructions to do this depend on which shell you're using: [Bash](#bash) or [Powershell](#powershell):
-
-### Bash
-
 - Open your profile script file. On Linux, your Bash profile script should normally be `~/.bashrc`. On Mac OS X, it should be `~/.bash_profile`. 
 - Once you've opened the profile script, add the following snippet of code at the end:
 
@@ -44,8 +42,9 @@ function j {
 - Save the file.
 - All done! The next time you open up a terminal, Jumpcut will be ready for use.
 
-### Powershell
+### Powershell (Windows)
 
+- [Download](http://timmolderez.be/builds/jumpcut/) the Jumpcut binary. (If there is no release for your platform, you can also [compile](#development) Jumpcut.)
 - Open your Powershell profile script. You can find out its location by entering `$profile` in a shell.
 - Once opened, add the following snippet of code at the end:
 
