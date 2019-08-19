@@ -1,4 +1,4 @@
-# Jumpcut - terminal alias manager
+# Jumpcut - alias manager
 
 <img src="https://raw.githubusercontent.com/timmolderez/jumpcut/master/jumpcut.png" alt="Jumpcut logo">
 
