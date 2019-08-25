@@ -80,7 +80,7 @@ function j {
 
 `j [alias] [arg-1]..[arg-n]` - Execute [alias], using the given arguments
 
-`j add [alias] [cmd]` - Adds a new alias, which executes the given command (arguments can be specified using $1, $2, ..)
+`j add [alias] [cmd]` - Adds a new alias, which executes the given command (arguments can be specified using ?1, ?2, ..)
 
 `j addwd [alias] [cmd]` - Adds a new alias, which always executes the given command from the current working directory
 
@@ -107,17 +107,17 @@ This is the most general-purpose means to define an alias. Here are a few exampl
 ~/Documents>
 ```
 
-Aliases can also be parametrized using `$1`, `$2`, `$3`, etc.<br />
-*Define an alias `tgz` that executes `tar -czvf compressed.tar.gz $1`*
+Aliases can also be parametrized using `?1`, `?2`, `?3`, etc.<br />
+*Define an alias `tgz` that executes `tar -czvf compressed.tar.gz ?1`*
 ```bash
-~> j add tgz tar -czvf compressed.tar.gz $1
+~> j add tgz tar -czvf compressed.tar.gz ?1
 ~> j tgz Downloads
 ~> ... The folder ~/Downloads is now being archived to compressed.tar.gz ...
 ```
 
-*Define an alias `tgz` that executes `tar -czvf $1 $2`*
+*Define an alias `tgz` that executes `tar -czvf ?1 ?2`*
 ```bash
-~> j add tgz tar -czvf $1 $2
+~> j add tgz tar -czvf ?1 ?2
 ~> j tgz downloads.tar.gz Downloads
 ~> ... The folder ~/Downloads is now being archived to downloads.tar.gz ...
 ```
@@ -147,7 +147,7 @@ The `j addwd` command (where "wd" stands for "working directory") is useful for 
 ~>
 ```
 
-This example is equivalent to `j add jc-pull cd "home/user/Documents/Git/Jumpcut;git pull;cd $pwd"`. (Note that `$pwd` is filled in by Jumpcut with the current directory whenever the alias is invoked.)
+This example is equivalent to `j add jc-pull cd "home/user/Documents/Git/Jumpcut;git pull;cd ?pwd"`. (Note that `?pwd` is filled in by Jumpcut with the current directory whenever the alias is invoked.)
 
 ### Executing aliases
 
@@ -171,7 +171,7 @@ Now, let's say we've already defined a couple of aliases: (`j list` will show al
 ```bash
 ~> j list
 gpush    git push
-gcomm    git commit -m $1
+gcomm    git commit -m ?1
 gpull    git pull
 ```
 By entering `j push`, it is clear we intend to run the `gpush` alias. However, in case of `j gp`, it is not clear whether `gpush` or `gpull` should be executed. If there is any ambiguity, Jumpcut will display a selection menu:

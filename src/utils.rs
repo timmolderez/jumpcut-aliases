@@ -55,7 +55,7 @@ pub fn usage() {
     j list                        List all aliases
     j [alias]                     Execute the alias named [alias] (also works by entering only part of its name)
     j [alias] [arg-1]..[arg-n]    Execute [alias], using the given arguments
-    j add [alias] [cmd]           Adds a new alias, which executes the given command (arguments can be specified using $1, $2, ..)
+    j add [alias] [cmd]           Adds a new alias, which executes the given command (arguments can be specified using ?1, ?2, ..)
     j addwd [alias] [cmd]         Adds a new alias, which always executes the given command from the current working directory
     j addpath [alias] [path]      Adds a new alias, which navigates to the given path
     j desc [alias] [desc]         Sets the description of [alias] to [desc]

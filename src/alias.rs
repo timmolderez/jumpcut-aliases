@@ -83,17 +83,18 @@ impl Alias {
   /// launched via `source` is allowed to do this.
   pub fn execute(&self, args:Vec<String>) {
     // If the command contains "$prev", this should be substitued for the current working directory
-    let command_template = if self.command.ends_with("$pwd") {
+    let command_template = if self.command.ends_with("?pwd") {
       let abs_pwd = absolute_path(&env::current_dir().unwrap());
       let formatted_pwd = &format!("\"{}\"", abs_pwd)[..];
-      self.command.replace("$prev", formatted_pwd)
+      self.command.replace("?pwd", formatted_pwd)
     } else {
       self.command.clone()
     };
 
     // Instantiate all arguments
     let command_instance = args.as_slice().iter().enumerate().fold(command_template.clone(), 
-      |acc:String, (i, arg)| acc.replace(&format!("${}", i), arg));
+      |acc:String, (i, arg)| {
+        acc.replace(&format!("?{}", i+1), arg)});
 
     println!("{}", command_instance);
   }
