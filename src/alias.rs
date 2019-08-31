@@ -29,6 +29,7 @@ impl Alias {
   pub fn get_description(&self) -> &str {return &self.description;}
 
   pub fn update_description(self, description: &str) -> Alias {
+    let description = if description=="-" {""} else {description};
     return Alias{description: description.to_string() , ..self};
   }
   pub fn update_confirm(self, confirm: bool) -> Alias {
