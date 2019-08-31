@@ -100,25 +100,20 @@ fn is_reserved_keyword(action: &str) -> bool {
 /// Displays a list of all aliases, together with their command and description
 fn list_aliases() -> io::Result<()> {
     let path = alias_path();
-    let entries = path.read_dir()?;
+    let mut entries: Vec<_> = path.read_dir()?.map(|r| r.unwrap()).collect();
+    entries.sort_by_key(|dir| dir.file_name());
 
     // Find the length of the longest alias; we need this for formatting the output
-    let alias_len = entries.fold(0, |current_max, entry| {
-        return match entry {
-            Ok(file) => {
-                let name_len = file.file_name().len();
-                if name_len > current_max {
-                    return name_len;
-                } else {
-                    return current_max;
-                }
-            }
-            Err(_) => current_max,
-        };
+    let alias_len = entries.iter().fold(0, |current_max, file| {
+        let name_len = file.file_name().len();
+        if name_len > current_max {
+            return name_len;
+        } else {
+            return current_max;
+        } 
     });
 
-    for entry in path.read_dir()? {
-        let entry = entry?;
+    for entry in entries {
         let fname = entry.file_name();
         let path = alias_path().join(fname);
         let fname_str = entry.file_name().into_string().unwrap();
@@ -137,10 +132,8 @@ fn find_and_exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
         // If there's an exact match of the user's input
         exec_alias(alias, args)?;
     } else {
-        // Otherwise, look for any aliases that contain the user's input
-        let matches = alias_path().read_dir()?.filter_map(|f| {
-            let entry = f.unwrap();
-            let fname_str = entry.file_name().as_os_str().to_os_string().into_string().unwrap();
+        let matches = path.read_dir()?.filter_map(|entry| {
+            let fname_str = entry.unwrap().file_name().as_os_str().to_os_string().into_string().unwrap();
             if fname_str.contains(alias) {
                 return Some(fname_str);
             } else {
@@ -148,7 +141,9 @@ fn find_and_exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
             }
         });
         
-        let match_vec: Vec<String> = matches.collect();
+        let mut match_vec: Vec<String> = matches.collect();
+        match_vec.sort();
+
         match match_vec.len() {
             0 => {
                 error("no matching aliases found.");
@@ -217,7 +212,12 @@ fn add_alias(alias: &str, cmd: &str) -> io::Result<()> {
 /// Add/change the description of an existing alias, and save it to file
 fn add_description(alias: &str, description: &str) -> io::Result<()> {
     let path = alias_path().join(alias);
-    let al = Alias::read(&alias, &alias_path().join(alias))?;
+    if !path.exists() {
+      error(&format!("alias {:?} does not exist.", alias));
+      return Ok(());
+    }
+
+    let al = Alias::read(&alias, &path)?;
     let new_al = al.update_description(description.clone());
     return new_al.write(&path);
 }
@@ -225,6 +225,11 @@ fn add_description(alias: &str, description: &str) -> io::Result<()> {
 /// Update whether a confirmation prompt should be shown for an existing alias, and save it to file
 fn set_confirmation(alias: &str, confirm: bool) -> io::Result<()> {
     let path = alias_path().join(alias);
+    if !path.exists() {
+      error(&format!("alias {:?} does not exist.", alias));
+      return Ok(());
+    }
+
     let al = Alias::read(&alias, &path)?;
     let new_al = al.update_confirm(confirm);
     return new_al.write(&path);
