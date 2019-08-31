@@ -48,6 +48,7 @@ impl Alias {
   ///   - the alias's options (e.g. "confirm")
   pub fn read(alias: &str, path: &Path) -> Result<Alias, Error> {
     let f = File::open(path)?;
+    
     let f = BufReader::new(f);
     let confirm_default = false;
 
@@ -100,10 +101,12 @@ impl Alias {
   }
 
   pub fn to_string(&self, width: usize) -> String {
+    let flags = if self.must_confirm() {" (Confirmation required)"} else {""};
+
     if self.description == "" {
-      return format!("{: <w$}  {}", self.alias, self.command, w=width);    
+      return format!("{: <w$}  {}{}", self.alias, self.command, flags, w=width);    
     } else {
-      return format!("{: <w$}  {}\n{: <w$}  {}", self.alias, self.command, "", self.description, w=width);
+      return format!("{: <w$}  {}{}\n{: <w$}  {}", self.alias, self.command, flags, "", self.description, w=width);
     }
   }
 }
