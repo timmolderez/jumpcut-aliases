@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::fs;
+use std::ffi::OsStr;
 
 /// Returns the path to config directory
 pub fn alias_path() -> PathBuf {
@@ -30,6 +31,11 @@ pub fn absolute_path(path: &PathBuf) -> String {
     }
 }
 
+/// Converts a OsStr to a String
+pub fn osstr_to_string(ostr: &OsStr) -> String {
+    return ostr.to_os_string().into_string().unwrap()
+}
+
 /// Check the length of the given argument list
 /// 
 /// If the length is not as expected, false is returned and an error is printed.
@@ -53,6 +59,7 @@ pub fn usage() {
     print!("Jumpcut usage:
 
     j list                        List all aliases
+    j list [search]               List all aliases containing [search] in their name
     j [alias]                     Execute the alias named [alias] (also works by entering only part of its name)
     j [alias] [arg-1]..[arg-n]    Execute [alias], using the given arguments
     j add [alias] [cmd]           Adds a new alias, which executes the given command (arguments can be specified using ?1, ?2, ..)
