@@ -4,7 +4,9 @@ use std::io::prelude::*;
 use std::fs::File;
 use std::path::Path;
 use std::fs;
+use regex::{Regex,Captures};
 use crate::utils::*;
+use std::collections::HashSet;
 
 pub struct Alias {
   alias: String,
@@ -84,7 +86,7 @@ impl Alias {
   /// e.g. by changing environment variables or changing the working directory. However, any shell script
   /// launched via `source` is allowed to do this.
   pub fn execute(&self, args:Vec<String>) {
-    // If the command contains "$prev", this should be substitued for the current working directory
+    // If the command contains "?pwd", this should be substituted for the current working directory
     let command_template = if self.command.ends_with("?pwd") {
       let abs_pwd = absolute_path(&env::current_dir().unwrap());
       let formatted_pwd = &format!("\"{}\"", abs_pwd)[..];
@@ -94,11 +96,27 @@ impl Alias {
     };
 
     // Instantiate all arguments
-    let command_instance = args.as_slice().iter().enumerate().fold(command_template.clone(), 
-      |acc:String, (i, arg)| {
-        acc.replace(&format!("?{}", i+1), arg)});
+    let mut err_set: HashSet<String> = HashSet::new();
+    let re = Regex::new(r"\?[0-9]*").unwrap();
+    let out = re.replace_all(&command_template[..], |caps: &Captures|{
+      let re_match = caps.get(0).unwrap().as_str();
+      let idx = re_match[1..2].parse::<usize>().unwrap();
+      let val = match args.get(idx-1) {
+        Some(v) => v,
+        None => {err_set.insert(re_match.to_string()); ""}
+      };
+      return format!("{}", val);
+    });
 
-    println!("{}", command_instance);
+    // Print the result
+    if err_set.is_empty() {
+      println!("{}", out);
+    } else {
+      let mut err_list= err_set.into_iter().collect::<Vec<String>>();
+      err_list.sort();
+      error(&format!("no arguments provided for {} in command: {}", err_list.join(", "), self.command)[..]);
+      println!(" ");
+    }
   }
 
   pub fn to_string(&self, width: usize) -> String {

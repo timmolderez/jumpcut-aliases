@@ -67,10 +67,10 @@ pub fn error(err: &str) {
 pub fn usage() {
     print!("Jumpcut usage:
 
-    j list                        List all aliases
-    j list [search]               List all aliases containing [search] in their name
     j [alias]                     Execute the alias named [alias] (also works by entering only part of its name)
     j [alias] [arg-1]..[arg-n]    Execute [alias], using the given arguments
+    j list                        List all aliases
+    j list [search]               List all aliases containing [search] in their name
     j add [alias] [cmd]           Adds a new alias, which executes the given command (arguments can be specified using ?1, ?2, ..)
     j addwd [alias] [cmd]         Adds a new alias, which always executes the given command from the current working directory
     j addpath [alias] [path]      Adds a new alias, which navigates to the given path

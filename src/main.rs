@@ -1,5 +1,6 @@
 extern crate dialoguer;
 extern crate dirs;
+extern crate regex;
 use std::env;
 use std::io;
 use std::fs;
