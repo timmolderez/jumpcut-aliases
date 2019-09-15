@@ -39,8 +39,10 @@ function j {
   fi
 }
 ```
-- This snippet defines the `j` Bash function that is used to invoke Jumpcut. If you'd like to invoke Jumpcut with another name than `j`, simply change the function name.
-- Make sure to adjust the `jumpcut_bin=~/jumpcut` line so it points to the path where you downloaded the Jumpcut binary!
+- This snippet defines the `j` Bash function that is used to invoke Jumpcut.
+- Make sure to adjust the `jumpcut_bin=~/jumpcut` line so it points to the path where you downloaded the Jumpcut binary! 
+- *(Optional)* If you'd like to invoke Jumpcut with another name than `j`, simply change the function name.
+- *(Optional)* Whenever executing an alias, if you'd also like to see the actual command being executed, you can add `echo "$cmd"` just before the `eval "$cmd"` line.
 - Save the file.
 - All done! The next time you open up a terminal, Jumpcut will be ready for use.
 
@@ -63,9 +65,12 @@ function j {
 }
 ```
 
-- This snippet defines the `j` Powershell function that is used to invoke Jumpcut. If you'd like to invoke Jumpcut with another name than `j`, simply change the function name.
+- This snippet defines the `j` Powershell function that is used to invoke Jumpcut. 
 - Make sure to adjust the `$jumpcut_bin = 'C:\jumpcut.exe'` line so it points to the path where you downloaded the Jumpcut binary!
+- *(Optional)* If you'd like to invoke Jumpcut with another name than `j`, simply change the function name.
+- *(Optional)* Whenever executing an alias, if you'd also like to see the actual command being executed, you can add `echo $cmd` just before the `Invoke-Expression $cmd` line.
 - Save the file.
+- In most cases, Windows' default security policy does not allow executing any Powershell scripts, including the profile script. While a reasonable safety precaution for most users, we'll want to open this up a bit. You can change Windows' policy so it does allow scripts that are created locally, but scripts downloaded from the internet must be digitally signed: open a Powershell window as administrator, then run `Set-ExecutionPolicy RemoteSigned`.<br />([More information](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-6))
 - All done! The next time you open up a Powershell window, Jumpcut will be ready for use.
 
 ## Usage
@@ -192,7 +197,8 @@ Execute alias "home"? [y/N]
 Jumpcut can be compiled as follows:
 1. Install Rust: https://www.rust-lang.org/tools/install
 2. Clone Jumpcut's repository: `git clone git@github.com:timmolderez/jumpcut.git`
-3. Run `cargo build`
-4. All done! You can find the compiled binary in the "target/debug" subdirectory.
+3. *(Optional)* Run Jumpcut's test suite: `cargo test -- --test-threads=1`
+4. Run `cargo build --release`
+5. All done! You can find the compiled binary in the "target/release" subdirectory.
 
 Note that the Jumpcut binary itself won't execute any aliases; it can only print the command to be executed to your console. The actual execution is done by the snippet of code you had to add to your shell's profile script during Jumpcut's [installation](#installation).

@@ -1,15 +1,15 @@
-use std::env;
-use std::io;
 extern crate dialoguer;
 extern crate dirs;
+use std::env;
+use std::io;
+use std::fs;
 use std::path::PathBuf;
-pub mod alias;
+use dialoguer::{Confirmation, Select};
 mod utils;
 use utils::*;
+pub mod alias;
 use alias::Alias;
-use dialoguer::{Confirmation, Select};
 
-use std::fs;
 
 /// Jumpcut - a command-line utility to quickly access frequently-used commands/folders
 /// 

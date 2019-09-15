@@ -1,11 +1,20 @@
 use std::path::PathBuf;
 use std::fs;
 use std::ffi::OsStr;
+use std::env;
 
-/// Returns the path to config directory
+/// Returns the path where aliases are stored (release build)
+#[cfg(not(debug_assertions))]
 pub fn alias_path() -> PathBuf {
     let home = dirs::home_dir().unwrap_or_default();
     return home.join(".jumpcut");
+}
+
+/// Returns the path where all aliases are stored (debug and test builds)
+#[cfg(debug_assertions)]
+pub fn alias_path() -> PathBuf {
+    let pwd = env::current_dir().unwrap_or_default();
+    return pwd.join(".jumpcut_test");
 }
 
 /// Converts a `PathBuf` path to its absolute `String` representation
