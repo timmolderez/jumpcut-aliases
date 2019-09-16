@@ -19,7 +19,7 @@ impl Alias {
   /// Constructor
   /// 
   /// `alias`       : alias name
-  /// `cmd`         : the command that this alias expands to; arguments are represented as $1, $2, etc. ; the present working directory is represented as $pwd
+  /// `cmd`         : the command that this alias expands to; arguments are represented as ?1, ?2, etc. ; the present working directory is represented as $pwd
   /// `description` : an optional description of what this alias does
   /// `confirm`     : if true, a confirmation prompt is shown whenever executing this alias
   pub fn new(alias: &str, cmd: &str, description: &str, confirm: bool) -> Alias {
