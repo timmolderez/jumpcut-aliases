@@ -50,7 +50,7 @@ fn main() -> Result<(),io::Error> {
             if args_ok(&args, 2) {
                 let abs_pwd = absolute_path(&env::current_dir().unwrap());
                 let cmd = args[3..].join(" ");
-                return add_alias(&args[2], &format!("cd \"{}\";{};cd $pwd", abs_pwd, cmd));
+                return add_alias(&args[2], &format!("cd \"{}\";{};cd ?pwd", abs_pwd, cmd));
             }
         }
 
