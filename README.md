@@ -1,12 +1,14 @@
 # Jumpcut - alias manager
 
-<img src="https://raw.githubusercontent.com/timmolderez/jumpcut/master/jumpcut.png" alt="Jumpcut logo">
+<img src="https://raw.githubusercontent.com/timmolderez/jumpcut-aliases/master/img/jumpcut.png" alt="Jumpcut logo">
 
 Jumpcut is a utility for your terminal that lets you define aliases/shortcuts to quickly access folders or run commands. If you're familiar with the `alias` command, Jumpcut is similar, but provides some additional conveniences such as:
 - Adding permanent aliases (without editing any .profile files)
 - Executing an alias by only typing part of its name
 - Quickly defining aliases that navigate to a given folder
 - Defining parametrized aliases
+
+<img src="https://raw.githubusercontent.com/timmolderez/jumpcut-aliases/master/img/demo.gif" alt="Jumpcut demo session">
 
 Jumpcut is available for Bash (Linux/OS X) and Powershell (Windows), and can be easily ported to support other shells.
 
