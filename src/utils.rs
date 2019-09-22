@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 use std::fs;
 use std::ffi::OsStr;
+
+#[cfg(debug_assertions)]
 use std::env;
 
 /// Returns the path where aliases are stored (release build)
