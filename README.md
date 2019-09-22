@@ -10,14 +10,16 @@ Jumpcut is a utility for your terminal that lets you define aliases/shortcuts to
 
 Jumpcut is available for Bash (Linux/OS X) and Powershell (Windows), and can be easily ported to support other shells.
 
-- [Installation](#installation)
-  - [Bash (Linux / Mac OS X)](#bash-linux--mac-os-x)
-  - [Powershell (Windows)](#powershell-windows)
-- [Usage](#usage)
-  - [Overview](#overview)
-  - [Adding aliases](#adding-aliases)
-  - [Executing aliases](#executing-aliases)
-- [Development](#development)
+- [Jumpcut - alias manager](#jumpcut---alias-manager)
+  - [Installation](#installation)
+    - [Bash (Linux / Mac OS X)](#bash-linux--mac-os-x)
+    - [Powershell (Windows)](#powershell-windows)
+  - [Usage](#usage)
+    - [Overview](#overview)
+    - [Adding aliases](#adding-aliases)
+    - [Executing aliases](#executing-aliases)
+    - [Tips](#tips)
+  - [Development](#development)
 
 ## Installation
 
@@ -25,7 +27,7 @@ Jumpcut is available for Bash (Linux/OS X) and Powershell (Windows), and can be 
 
 - [Download](http://timmolderez.be/builds/jumpcut/) the Jumpcut binary. (If there is no release for your platform, you can also [compile](#development) Jumpcut.)
 - Open your profile script file. On Linux, your Bash profile script should normally be `~/.bashrc`. On Mac OS X, it should be `~/.bash_profile`. 
-- Once you've opened the profile script, add the following snippet of code at the end:
+- Once opened, add the following snippet of code at the end:
 
 ```bash
 function j {
@@ -39,10 +41,7 @@ function j {
   fi
 }
 ```
-- This snippet defines the `j` Bash function that is used to invoke Jumpcut.
-- Make sure to adjust the `jumpcut_bin=~/jumpcut` line so it points to the path where you downloaded the Jumpcut binary! 
-- *(Optional)* If you'd like to invoke Jumpcut with another name than `j`, simply change the function name.
-- *(Optional)* Whenever executing an alias, if you'd also like to see the actual command being executed, you can add `echo "$cmd"` just before the `eval "$cmd"` line.
+- This snippet defines the `j` Bash function that is used to invoke Jumpcut. Make sure to adjust the `jumpcut_bin=~/jumpcut` line so it points to the path where you downloaded the Jumpcut binary! 
 - Save the file.
 - All done! The next time you open up a terminal, Jumpcut will be ready for use.
 
@@ -65,12 +64,9 @@ function j {
 }
 ```
 
-- This snippet defines the `j` Powershell function that is used to invoke Jumpcut. 
-- Make sure to adjust the `$jumpcut_bin = 'C:\jumpcut.exe'` line so it points to the path where you downloaded the Jumpcut binary!
-- *(Optional)* If you'd like to invoke Jumpcut with another name than `j`, simply change the function name.
-- *(Optional)* Whenever executing an alias, if you'd also like to see the actual command being executed, you can add `echo $cmd` just before the `Invoke-Expression $cmd` line.
+- This snippet defines the `j` Powershell function that is used to invoke Jumpcut. Make sure to adjust the `$jumpcut_bin = 'C:\jumpcut.exe'` line so it points to the path where you downloaded the Jumpcut binary.
 - Save the file.
-- In most cases, Windows' default security policy does not allow executing any Powershell scripts, including the profile script. While a reasonable safety precaution for most users, we'll want to open this up a bit. You can change Windows' policy so it does allow scripts that are created locally, but scripts downloaded from the internet must be digitally signed: open a Powershell window as administrator, then run `Set-ExecutionPolicy RemoteSigned`.<br />([More information](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-6))
+- In most cases, Windows' default security policy does not allow executing any Powershell scripts, including the profile script. While a reasonable safety precaution for most users, we'll want to open this up a bit. You can change Windows' policy so it does allow scripts that are created locally, but scripts downloaded from the internet must be digitally signed: open a Powershell window as administrator, then run `Set-ExecutionPolicy RemoteSigned`.<br />([Set-ExecutionPolicy documentation](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-6))
 - All done! The next time you open up a Powershell window, Jumpcut will be ready for use.
 
 ## Usage
@@ -193,6 +189,51 @@ Finally, while most aliases may be harmless if you execute them by accident, you
 ~> j gpush
 Execute alias "home"? [y/N]
 ```
+
+### Tips
+
+#### Grouping aliases
+
+Once you start developing a larger collection of aliases, a simple way to organise them is to use prefixes in the alias name. 
+
+For example, I have several aliases that navigate to different folders relevant for one organisation, and other aliases to navigate to folders for another organisation. You can distinguish between the two by adding e.g. an "org1-" prefix or an "org2"-prefix in the alias name.
+
+Because you only need to enter part of the alias name to execute it, this has two benefits:
+- You don't need to bother with typing the prefix if you know exactly which alias you want.
+- If you want to see all aliases of the "org1-" group, you can simply type `j org1-`.
+
+#### Invoking Jumpcut with another name than `j`
+
+To change the name you use to invoke Jumpcut, change the `function j {` line in your profile script (the one you modified during [installation](#installation)). For example, change it to `function x {`. As soon as you open a new terminal window, Jumpcut will now be invoked with `x`.
+
+#### Show the actual command when executing an alias
+
+If you'd like see which command is actually executed when invoking an alias, you only need to add one line to your profile script (the one you modified during [installation](#installation)):
+
+*Bash* - Add `echo "$cmd"` just before the `eval "$cmd"` line.
+
+*Powershell* - Add `echo $cmd` just before the `Invoke-Expression $cmd` line.
+
+#### Adding alias commands with reserved symbols
+
+If the command you'd like to alias contains any symbols that are reserved by your shell, these symbols should be escaped:
+
+*Bash* - Add `"` quotes around the entire command, and add the `\` escape character before all reserved symbols. For example, you can create an alias `test` for the command `echo foo;echo bar` as follows: 
+```
+j add test "echo foo\;echo bar"
+```
+
+*Powershell* - Add `'` quotes around the entire command, and add the `` ` `` (backtick) escape character before all reserved symbols. For example, you can create an alias `test` for the command `echo foo;echo bar` as follows: 
+```
+j add test 'echo foo`;echo bar'
+```
+
+#### Manual alias management 
+
+If needed, you can also manually manage aliases. Your aliases are stored as text files in the `.jumpcut` folder of your home directory. The file format of an alias is very simple:
+- The name of the file is the alias name. (The file does not have an extension!) 
+- The file itself contains exactly one line, which is the command to be executed.
+- Optionally, you can add a description for the alias on the second line.
 
 ## Development
 
