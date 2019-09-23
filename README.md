@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/timmolderez/jumpcut-aliases/master/img/jumpcut.png" alt="Jumpcut logo">
 
-Jumpcut is a utility for your terminal that lets you define aliases/shortcuts to quickly access folders or run commands. If you're familiar with the `alias` command, Jumpcut is similar, but provides some additional conveniences such as:
+Jumpcut is a utility for your terminal that lets you define aliases to quickly run commands or access folders. If you're familiar with the `alias` command, Jumpcut is similar, but provides some additional conveniences such as:
 - Adding permanent aliases (without editing any .profile files)
 - Executing an alias by only typing part of its name
 - Quickly defining aliases that navigate to a given folder
