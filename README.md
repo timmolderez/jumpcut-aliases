@@ -12,16 +12,15 @@ Jumpcut is a utility for your terminal that lets you define aliases/shortcuts to
 
 Jumpcut is available for Bash (Linux/OS X) and Powershell (Windows), and can be easily ported to support other shells.
 
-- [Jumpcut - alias manager](#jumpcut---alias-manager)
-  - [Installation](#installation)
-    - [Bash (Linux / Mac OS X)](#bash-linux--mac-os-x)
-    - [Powershell (Windows)](#powershell-windows)
-  - [Usage](#usage)
-    - [Overview](#overview)
-    - [Adding aliases](#adding-aliases)
-    - [Executing aliases](#executing-aliases)
-    - [Tips](#tips)
-  - [Development](#development)
+- [Installation](#installation)
+  - [Bash (Linux / Mac OS X)](#bash-linux--mac-os-x)
+  - [Powershell (Windows)](#powershell-windows)
+- [Usage](#usage)
+  - [Overview](#overview)
+  - [Adding aliases](#adding-aliases)
+  - [Executing aliases](#executing-aliases)
+  - [Tips](#tips)
+- [Development](#development)
 
 ## Installation
 
