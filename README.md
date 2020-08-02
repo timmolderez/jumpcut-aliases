@@ -242,7 +242,7 @@ If needed, you can also manually manage aliases. Your aliases are stored as text
 
 Jumpcut can be compiled as follows:
 1. Install Rust: https://www.rust-lang.org/tools/install
-2. Clone Jumpcut's repository: `git clone git@github.com:timmolderez/jumpcut.git`
+2. Clone Jumpcut's repository: `git clone git@github.com:timmolderez/jumpcut-aliases.git`
 3. *(Optional)* Run Jumpcut's test suite: `cargo test -- --test-threads=1`
 4. Run `cargo build --release`
 5. All done! You can find the compiled binary in the "target/release" subdirectory.
