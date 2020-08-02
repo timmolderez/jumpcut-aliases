@@ -12,16 +12,15 @@ Jumpcut is a utility for your terminal that lets you define aliases/shortcuts to
 
 Jumpcut is available for Bash (Linux/OS X) and Powershell (Windows), and can be easily ported to support other shells.
 
-- [Jumpcut - alias manager](#jumpcut---alias-manager)
-  - [Installation](#installation)
-    - [Bash (Linux / Mac OS X)](#bash-linux--mac-os-x)
-    - [Powershell (Windows)](#powershell-windows)
-  - [Usage](#usage)
-    - [Overview](#overview)
-    - [Adding aliases](#adding-aliases)
-    - [Executing aliases](#executing-aliases)
-    - [Tips](#tips)
-  - [Development](#development)
+- [Installation](#installation)
+  - [Bash (Linux / Mac OS X)](#bash-linux--mac-os-x)
+  - [Powershell (Windows)](#powershell-windows)
+- [Usage](#usage)
+  - [Overview](#overview)
+  - [Adding aliases](#adding-aliases)
+  - [Executing aliases](#executing-aliases)
+  - [Tips](#tips)
+- [Development](#development)
 
 ## Installation
 
@@ -187,10 +186,12 @@ By entering `j push`, it is clear we intend to run the `gpush` alias. However, i
 ```
 Finally, while most aliases may be harmless if you execute them by accident, you may also define a couple aliases where this is not the case. To avoid such accidents, you can add a confirmation prompt to specific aliases using `j confirm`:
 ```bash
-~> j confirm gpush true
+~> j confirm gpush 1
 ~> j gpush
 Execute alias "home"? [y/N]
 ```
+
+If you prefer a stronger level of confirmation, you can use `j confirm gpush 2` instead. When trying to execute the `gpush` alias, you'll now need to type the alias name again to confirm.
 
 ### Tips
 

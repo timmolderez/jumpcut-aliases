@@ -12,7 +12,7 @@ pub struct Alias {
   alias: String,
   command: String,
   description: String,
-  confirm: bool // If true, a confirmation prompt should be shown when executing this alias
+  confirm: i8 // 0: no confirmation required ; 1: y/n confirmation ; 2: must confirm by entering alias name
 }
 
 impl Alias {
@@ -22,7 +22,7 @@ impl Alias {
   /// `cmd`         : the command that this alias expands to; arguments are represented as ?1, ?2, etc. ; the present working directory is represented as $pwd
   /// `description` : an optional description of what this alias does
   /// `confirm`     : if true, a confirmation prompt is shown whenever executing this alias
-  pub fn new(alias: &str, cmd: &str, description: &str, confirm: bool) -> Alias {
+  pub fn new(alias: &str, cmd: &str, description: &str, confirm: i8) -> Alias {
     return Alias{alias: alias.to_string(), command: cmd.to_string(), description: description.to_string(), confirm: confirm};
   }
 
@@ -34,12 +34,12 @@ impl Alias {
     let description = if description=="-" {""} else {description};
     return Alias{description: description.to_string() , ..self};
   }
-  pub fn update_confirm(self, confirm: bool) -> Alias {
+  pub fn update_confirm(self, confirm: i8) -> Alias {
     return Alias{confirm: confirm , ..self};
   }
 
   /// If true, a confirmation prompt is shown whenever executing this alias
-  pub fn must_confirm(&self) -> bool {return self.confirm;}
+  pub fn get_confirmation_level(&self) -> i8 {return self.confirm;}
 
   /// Reads an alias file
   /// 
@@ -48,12 +48,12 @@ impl Alias {
   /// - The contents of an alias file contains exactly 3 lines:
   ///   - the command that this alias expands to
   ///   - the alias's description (optional)
-  ///   - the alias's options (e.g. "confirm")
+  ///   - the alias's options (e.g. "confirm=2")
   pub fn read(alias: &str, path: &Path) -> Result<Alias, Error> {
     let f = File::open(path)?;
     
     let f = BufReader::new(f);
-    let confirm_default = false;
+    let confirm_default = 0;
 
     let lines:Result<Vec<String>, Error> = f.lines().collect();
     let lines = lines.unwrap_or_default();
@@ -62,8 +62,15 @@ impl Alias {
       1 => Ok(Alias::new(alias, &*lines[0], "", confirm_default)),
       2 => Ok(Alias::new(alias, &*lines[0], &*lines[1], confirm_default)),
       3 => {
-        let confirm = lines[2] == "confirm";
-        return Ok(Alias::new(alias.clone(), &*lines[0], &*lines[1], confirm));
+        let options = &lines[2];
+        let split = options.split("=");
+        let split_v: Vec<&str> = split.collect();
+        if split_v.len()==2 && split_v[0] == "confirm" {
+          let confirm = split_v[1].parse::<i8>().unwrap_or_default();
+          return Ok(Alias::new(alias.clone(), &*lines[0], &*lines[1], confirm));
+        } else {
+          return Ok(Alias::new(alias, &*lines[0], &*lines[1], confirm_default));
+        }
       }
       _ => Ok(Alias::new(alias.clone(), &*lines[0], &*lines[1], confirm_default)),
     };
@@ -73,8 +80,7 @@ impl Alias {
   /// 
   /// See alias::Alias::write() for information about the file format.
   pub fn write(&self, path: &Path) -> std::io::Result<()> {
-    let confirm = if self.confirm {"\nconfirm"} else {""};
-    let data = self.command.clone() + "\n" + self.description.as_str() + confirm;
+    let data = self.command.clone() + "\n" + self.description.as_str() + "\nconfirm=" + &self.confirm.to_string();
     return fs::write(path, data);
   }
 
@@ -120,7 +126,12 @@ impl Alias {
   }
 
   pub fn to_string(&self, width: usize) -> String {
-    let flags = if self.must_confirm() {" (Confirmation required)"} else {""};
+    let flags = match self.get_confirmation_level() {
+      0 => "",
+      1 => "(Y/N confirmation required)",
+      2 => "(Explicit confirmation required)",
+      _ => ""
+    };
 
     if self.description == "" {
       return format!("{: <w$}  {}{}", self.alias, self.command, flags, w=width);    

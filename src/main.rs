@@ -5,7 +5,7 @@ use std::env;
 use std::io;
 use std::fs;
 use std::path::PathBuf;
-use dialoguer::{Confirmation, Select};
+use dialoguer::{Confirmation, Select, Input};
 mod utils;
 use utils::*;
 pub mod alias;
@@ -71,7 +71,7 @@ fn main() -> Result<(),io::Error> {
 
         "confirm" => {
             if args_ok(&args, 2) {
-                return set_confirmation(&args[2], &args[3]=="true");
+                return set_confirmation(&args[2], args[3].parse::<i8>().unwrap_or_default());
             }
         }
 
@@ -176,15 +176,27 @@ fn find_and_exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
 fn exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
     let path = alias_path().join(alias);
     let al = Alias::read(&alias, &path)?;
-    if al.must_confirm() {
-        if Confirmation::new().default(false)
-        .with_text(&format!("Execute alias \"{}\"?", alias)[..]).interact()? {
-            al.execute(args);
-        } else {
-            exec_nothing();
+    match al.get_confirmation_level(){
+        0 => {al.execute(args)},
+        1 => {
+            if Confirmation::new().default(false).with_text(&format!("Execute alias \"{}\"?", alias)[..]).interact()? {
+                al.execute(args);
+            } else {
+                exec_nothing();
+            }
+        },
+        2 => {
+            let input = Input::<String>::new().with_prompt(&format!("Type \"{}\" to confirm", alias)[..]).interact()?;
+            if input==alias {
+                al.execute(args);
+            } else {
+                error("unexpected input.");
+                exec_nothing();
+            }
         }
-    } else {
-        al.execute(args);
+        _ => {
+
+        }
     }
     return Ok(());
 }
@@ -201,7 +213,7 @@ fn add_alias(alias: &str, cmd: &str) -> io::Result<()> {
         return Err(io::Error::new(io::ErrorKind::Other, "Reserved keyword."));
     }
 
-    let al = Alias::new(alias.clone(), cmd.clone(), "", false);
+    let al = Alias::new(alias.clone(), cmd.clone(), "", 0);
     let path = alias_path().join(alias);
     if path.exists() {
         if Confirmation::new().with_text("Overwrite existing alias?").interact()? {
@@ -222,7 +234,7 @@ fn add_description(alias: &str, description: &str) -> io::Result<()> {
 }
 
 /// Update whether a confirmation prompt should be shown for an existing alias, and save it to file
-fn set_confirmation(alias: &str, confirm: bool) -> io::Result<()> {
+fn set_confirmation(alias: &str, confirm: i8) -> io::Result<()> {
     return modify_alias(alias, |al|{
         return al.update_confirm(confirm);
         });

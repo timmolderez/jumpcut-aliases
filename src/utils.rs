@@ -67,7 +67,8 @@ pub fn error(err: &str) {
 
 /// Prints usage message
 pub fn usage() {
-    print!("Jumpcut usage:
+    print!("
+    Jumpcut usage:
 
     j [alias]                     Execute the alias named [alias] (also works by entering only part of its name)
     j [alias] [arg-1]..[arg-n]    Execute [alias], using the given arguments
@@ -77,6 +78,7 @@ pub fn usage() {
     j addwd [alias] [cmd]         Adds a new alias, which always executes the given command from the current working directory
     j addpath [alias] [path]      Adds a new alias, which navigates to the given path
     j desc [alias] [desc]         Sets the description of [alias] to [desc]
-    j confirm [alias] true|false  If true, a confirmation prompt is shown when executing [alias]
-    j rm [alias]                  Removes [alias]")
+    j confirm [alias] 0|1|2       Set alias confirmation prompt (0: none ; 1: y/n confirmation ; 2: explicit confirmation)
+    j rm [alias]                  Removes [alias]
+    ")
 }
