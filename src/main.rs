@@ -5,7 +5,7 @@ use std::env;
 use std::io;
 use std::fs;
 use std::path::PathBuf;
-use dialoguer::{Confirmation, Select, Input};
+use dialoguer::{Confirm, Select, Input};
 mod utils;
 use utils::*;
 pub mod alias;
@@ -55,8 +55,8 @@ fn main() -> Result<(),io::Error> {
         }
 
         "addpath" => {
-            if args_ok(&args, 2) {
-                let path = args[3..].join(" ");
+            if args_ok(&args, 1) {
+                let path = if args.len() > 3 {args[3..].join(" ")} else {".".to_string()};
                 let abs_path = absolute_path(&PathBuf::from(path));
                 return add_alias(&args[2], &format!("cd \"{}\"", abs_path));
             }
@@ -179,7 +179,7 @@ fn exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
     match al.get_confirmation_level(){
         0 => {al.execute(args)},
         1 => {
-            if Confirmation::new().default(false).with_text(&format!("Execute alias \"{}\"?", alias)[..]).interact()? {
+            if Confirm::new().default(false).with_prompt(&format!("Execute alias \"{}\"?", alias)[..]).interact()? {
                 al.execute(args);
             } else {
                 exec_nothing();
@@ -216,7 +216,7 @@ fn add_alias(alias: &str, cmd: &str) -> io::Result<()> {
     let al = Alias::new(alias.clone(), cmd.clone(), "", 0);
     let path = alias_path().join(alias);
     if path.exists() {
-        if Confirmation::new().with_text("Overwrite existing alias?").interact()? {
+        if Confirm::new().with_prompt("Overwrite existing alias?").interact()? {
             return al.write(&path);
         } else {
             return Ok(());
