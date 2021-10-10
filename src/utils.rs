@@ -70,8 +70,8 @@ pub fn usage() {
     print!("
     Jumpcut usage:
 
-    j ALIAS                       Execute the alias named ALIAS (also works by entering only part of its name)
-    j ALIAS ARGS*                 Execute ALIAS, using the given arguments
+    j ALIAS                       Execute the alias named ALIAS (also works by only entering parts of its name)
+    j ALIAS -- ARGS*              Execute ALIAS, using the given arguments
     j list                        List all aliases
     j list SEARCH                 List all aliases containing SEARCH in their name
     j add ALIAS CMD               Adds a new alias, which executes the given command (arguments can be specified using ?1, ?2, ..)

@@ -128,15 +128,15 @@ impl Alias {
   pub fn to_string(&self, width: usize) -> String {
     let flags = match self.get_confirmation_level() {
       0 => "",
-      1 => "(Y/N confirmation required)",
-      2 => "(Explicit confirmation required)",
+      1 => "(Y/N confirmation)",
+      2 => "(Explicit confirmation)",
       _ => ""
     };
 
     if self.description == "" {
-      return format!("{: <w$}  {}{}", self.alias, self.command, flags, w=width);    
+      return format!("{: <w$}  {} {}", self.alias, self.command, flags, w=width);    
     } else {
-      return format!("{: <w$}  {}{}\n{: <w$}  {}", self.alias, self.command, flags, "", self.description, w=width);
+      return format!("{: <w$}  {} {}\n{: <w$}  {}", self.alias, self.command, flags, "", self.description, w=width);
     }
   }
 }

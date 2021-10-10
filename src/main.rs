@@ -35,8 +35,7 @@ fn main() -> Result<(),io::Error> {
         }
 
         "list" => {
-            let search = if args.len()>2 {&args[2]} else {""};
-            return list_aliases(search);
+            return list_aliases(args[2..].to_vec());
         }
 
         "add" => {
@@ -82,7 +81,12 @@ fn main() -> Result<(),io::Error> {
         },
 
         _ => {
-            return find_and_exec_alias(action, args[2..].to_vec());
+            let arg_split_index = args.iter().position(|x| x == "--").unwrap_or_default();
+            return if arg_split_index == 0 {
+                find_and_exec_alias(args[1..].to_vec(), Vec::new())
+            } else {
+                find_and_exec_alias(args[1..arg_split_index].to_vec(), args[arg_split_index + 1..].to_vec())
+            }
         }
     };
 
@@ -101,15 +105,13 @@ fn is_reserved_keyword(action: &str) -> bool {
         || action == "rm";
 }
 
-/// Finds all aliases whose name contains the given search string
-fn find_aliases(search: &str) -> Vec<String> {
+/// Finds all aliases whose name contains all given search strings
+fn find_aliases(alias_parts: Vec<String>) -> Vec<String> {
     let matches = alias_path().read_dir().unwrap().filter_map(|entry| {
         let fname_str = osstr_to_string(entry.unwrap().file_name().as_os_str());
-        if fname_str.contains(search) {
-            return Some(fname_str);
-        } else {
-            return None;
-        }
+
+        let match_found = alias_parts.iter().all(|alias_part| {fname_str.contains(alias_part)});
+        return if match_found {Some(fname_str)} else {None};
     });
     
     let mut match_vec: Vec<String> = matches.collect();
@@ -118,15 +120,15 @@ fn find_aliases(search: &str) -> Vec<String> {
 }
 
 /// Displays a list of all aliases, together with their command and description
-fn list_aliases(search: &str) -> io::Result<()> {
-    let matches = find_aliases(search);
+fn list_aliases(alias_parts: Vec<String>) -> io::Result<()> {
+    let matches = find_aliases(alias_parts);
 
     // Find the length of the longest alias; we need this for formatting the output
     let alias_len = matches.iter().fold(0, |current_max, name| {
-        if name.len() > current_max {
-            return name.len();
+        return if name.len() > current_max {
+            name.len()
         } else {
-            return current_max;
+            current_max
         } 
     });
 
@@ -141,31 +143,35 @@ fn list_aliases(search: &str) -> io::Result<()> {
 /// Given (part) of an alias name, find any matches and execute it
 /// 
 /// If there are multiple matches, ask the user to choose one.
-fn find_and_exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
-    let path = alias_path().join(alias);
-    if path.exists() {
-        // If there's an exact match of the user's input
-        exec_alias(alias, args)?;
-    } else {
-        let matches = find_aliases(alias);
+fn find_and_exec_alias(alias_parts: Vec<String>, args: Vec<String>) -> io::Result<()> {
+    // If the user entered a full alias name
+    if alias_parts.len()==1 {
+        let alias = &alias_parts[0];
+        let path = alias_path().join(alias);
+        if path.exists() {
+            exec_alias(alias, args)?;
+            return Ok(());
+        }
+    }
 
-        match matches.len() {
-            0 => {
-                error("no matching aliases found.");
-                exec_nothing();
-            },
-            1 => {
-                exec_alias(&matches[0], args)?;
-            },
-            _ => {
-                let selection = Select::new()
-                    .default(0)
-                    .items(&matches[..])
-                    .interact_opt()
-                    .unwrap();
-                if let Some(selection) = selection {
-                    exec_alias(&matches[selection], args)?;
-                }
+    // If the user entered parts of an alias name
+    let matches = find_aliases(alias_parts);
+    match matches.len() {
+        0 => {
+            error("no matching aliases found.");
+            exec_nothing();
+        },
+        1 => {
+            exec_alias(&matches[0], args)?;
+        },
+        _ => {
+            let selection = Select::new()
+                .default(0)
+                .items(&matches[..])
+                .interact_opt()
+                .unwrap();
+            if let Some(selection) = selection {
+                exec_alias(&matches[selection], args)?;
             }
         }
     }
@@ -256,10 +262,10 @@ fn modify_alias(alias: &str, modify_fn:impl Fn(Alias) -> Alias) -> io::Result<()
 /// Remove the file of an existing alias
 fn remove_alias(alias: &str) -> io::Result<()> {
     let path = alias_path().join(alias);
-    if path.exists() {
-        return fs::remove_file(path);
+    return if path.exists() {
+        fs::remove_file(path)
     } else {
         error(&format!("there is no alias named \"{}\".", alias));
-        return Ok(());
+        Ok(())
     }
 }
