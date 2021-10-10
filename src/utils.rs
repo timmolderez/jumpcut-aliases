@@ -70,15 +70,15 @@ pub fn usage() {
     print!("
     Jumpcut usage:
 
-    j [alias]                     Execute the alias named [alias] (also works by entering only part of its name)
-    j [alias] [arg-1]..[arg-n]    Execute [alias], using the given arguments
+    j ALIAS                       Execute the alias named ALIAS (also works by entering only part of its name)
+    j ALIAS ARGS*                 Execute ALIAS, using the given arguments
     j list                        List all aliases
-    j list [search]               List all aliases containing [search] in their name
-    j add [alias] [cmd]           Adds a new alias, which executes the given command (arguments can be specified using ?1, ?2, ..)
-    j addwd [alias] [cmd]         Adds a new alias, which always executes the given command from the current working directory
-    j addpath [alias] [path]      Adds a new alias, which navigates to the given path
-    j desc [alias] [desc]         Sets the description of [alias] to [desc]
-    j confirm [alias] 0|1|2       Set alias confirmation prompt (0: none ; 1: y/n confirmation ; 2: explicit confirmation)
-    j rm [alias]                  Removes [alias]
+    j list SEARCH                 List all aliases containing SEARCH in their name
+    j add ALIAS CMD               Adds a new alias, which executes the given command (arguments can be specified using ?1, ?2, ..)
+    j addwd ALIAS CMD             Adds a new alias, which always executes the given command from the current working directory
+    j addpath ALIAS [PATH]        Adds a new alias, which navigates to the given path (default path: \".\")
+    j desc ALIAS DESC             Sets the description of ALIAS to DESC
+    j confirm ALIAS 0|1|2         Set alias confirmation prompt (0: none ; 1: y/n confirmation ; 2: explicit confirmation)
+    j rm ALIAS                    Removes ALIAS
     ")
 }
