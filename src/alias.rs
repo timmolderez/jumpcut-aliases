@@ -6,7 +6,6 @@ use std::path::Path;
 use std::fs;
 use regex::{Regex,Captures};
 use crate::utils::*;
-use std::collections::HashSet;
 
 pub struct Alias {
   alias: String,
@@ -86,12 +85,13 @@ impl Alias {
 
   /// "Execute" an alias using the given arguments
   /// 
-  /// Actually, the command to be executed is only printed to the console.
+  /// Actually, the command to be executed is only printed to the console!
   /// The wrapper script that calls Jumpcut is responsible for executing this command.
   /// This is deliberate because programs are not allowed to mess with the user's shell environment,
   /// e.g. by changing environment variables or changing the working directory. However, any shell script
   /// launched via `source` is allowed to do this.
-  pub fn execute(&self, args:Vec<String>) {
+  pub fn execute(&self, args:Vec<String>,
+                 missing_arg_handler:&dyn Fn(&Alias, String) -> String) {
     // If the command contains "?pwd", this should be substituted for the current working directory
     let command_template = if self.command.ends_with("?pwd") {
       let abs_pwd = absolute_path(&env::current_dir().unwrap());
@@ -102,27 +102,22 @@ impl Alias {
     };
 
     // Instantiate all arguments
-    let mut err_set: HashSet<String> = HashSet::new();
     let re = Regex::new(r"\?[0-9]*").unwrap();
     let out = re.replace_all(&command_template[..], |caps: &Captures|{
       let re_match = caps.get(0).unwrap().as_str();
       let idx = re_match[1..2].parse::<usize>().unwrap();
       let val = match args.get(idx-1) {
         Some(v) => v,
-        None => {err_set.insert(re_match.to_string()); ""}
+        None => {
+          let prompted_val = missing_arg_handler(self, re_match.to_string());
+          return prompted_val;
+        }
       };
       return format!("{}", val);
     });
 
-    // Print the result
-    if err_set.is_empty() {
-      println!("{}", out);
-    } else {
-      let mut err_list= err_set.into_iter().collect::<Vec<String>>();
-      err_list.sort();
-      error(&format!("no arguments provided for {} in command: {}", err_list.join(", "), self.command)[..]);
-      println!(" ");
-    }
+    // Simply print the result
+    println!("{}", out);
   }
 
   pub fn to_string(&self, width: usize) -> String {

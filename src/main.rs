@@ -81,7 +81,8 @@ fn main() -> Result<(),io::Error> {
         },
 
         _ => {
-            let arg_split_index = args.iter().position(|x| x == "--").unwrap_or_default();
+            let arg_split_index = args.iter().position(|x| x == "---").unwrap_or_default();
+
             return if arg_split_index == 0 {
                 find_and_exec_alias(args[1..].to_vec(), Vec::new())
             } else {
@@ -93,19 +94,16 @@ fn main() -> Result<(),io::Error> {
     return Ok(());
 }
 
-/// Is `action` a reserved keyword or an alias name?
+/// Is `action` a reserved keyword or is it an alias name?
 fn is_reserved_keyword(action: &str) -> bool {
-    return action == "is_exec_action"
-        || action == "list"
-        || action == "add"
-        || action == "addwd"
-        || action == "addpath"
-        || action == "desc"
-        || action == "confirm"
-        || action == "rm";
+    let reserved_keywords = [
+        "is_exec_action", "list",
+        "add", "addwd", "addpath", "rm",
+        "desc", "confirm", "cp"];
+    return reserved_keywords.contains(&action);
 }
 
-/// Finds all aliases whose name contains all given search strings
+/// Finds all aliases that contain all given search strings
 fn find_aliases(alias_parts: Vec<String>) -> Vec<String> {
     let matches = alias_path().read_dir().unwrap().filter_map(|entry| {
         let fname_str = osstr_to_string(entry.unwrap().file_name().as_os_str());
@@ -178,15 +176,22 @@ fn find_and_exec_alias(alias_parts: Vec<String>, args: Vec<String>) -> io::Resul
     return Ok(());
 }
 
+/// If an argument value was not provided, prompt for it now
+fn missing_argument_handler(alias: &Alias, arg_name: String) -> String {
+    let input = Input::<String>::new().with_prompt(
+        &format!("Enter a value for {} in `{}`", arg_name, alias.get_command())[..]).interact().unwrap_or_default();
+    return input
+}
+
 /// Execute the given alias, using the given arguments
 fn exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
     let path = alias_path().join(alias);
     let al = Alias::read(&alias, &path)?;
     match al.get_confirmation_level(){
-        0 => {al.execute(args)},
+        0 => {al.execute(args, &missing_argument_handler)},
         1 => {
             if Confirm::new().default(false).with_prompt(&format!("Execute alias \"{}\"?", alias)[..]).interact()? {
-                al.execute(args);
+                al.execute(args, &missing_argument_handler);
             } else {
                 exec_nothing();
             }
@@ -194,7 +199,7 @@ fn exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
         2 => {
             let input = Input::<String>::new().with_prompt(&format!("Type \"{}\" to confirm", alias)[..]).interact()?;
             if input==alias {
-                al.execute(args);
+                al.execute(args, &missing_argument_handler);
             } else {
                 error("unexpected input.");
                 exec_nothing();

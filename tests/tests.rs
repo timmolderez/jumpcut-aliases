@@ -1,6 +1,6 @@
 /// Jumpcut integration tests
 /// 
-/// Tests must be run sequentially, as they rely on the contents of the alias file directory:
+/// Tests must be run sequentially! (They rely on the contents of the alias file directory.)
 /// cargo test -- --test-threads=1
 
 extern crate assert_cmd;
@@ -50,7 +50,7 @@ fn exec_alias_params() {
         jc_cmd().args(&["add", alias, "mv ?1 ?2"]).unwrap();
         assert!(alias_exists(alias));
 
-        let out = jc_cmd().args(&[alias, "foo", "bar"]).output();
+        let out = jc_cmd().args(&[alias, "---", "foo", "bar"]).output();
         assert_eq!(out_to_str(out), "mv foo bar\n");
     });
 }
