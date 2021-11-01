@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::env;
 use std::io::{Error, ErrorKind, BufReader};
 use std::io::prelude::*;
@@ -90,8 +91,8 @@ impl Alias {
   /// This is deliberate because programs are not allowed to mess with the user's shell environment,
   /// e.g. by changing environment variables or changing the working directory. However, any shell script
   /// launched via `source` is allowed to do this.
-  pub fn execute(&self, args:Vec<String>,
-                 missing_arg_handler:&dyn Fn(&Alias, String) -> String) {
+  pub fn execute(&self, args:HashMap<String, String>,
+                 missing_arg_handler:&dyn Fn(&Alias, &str) -> String) {
     // If the command contains "?pwd", this should be substituted for the current working directory
     let command_template = if self.command.ends_with("?pwd") {
       let abs_pwd = absolute_path(&env::current_dir().unwrap());
@@ -101,23 +102,55 @@ impl Alias {
       self.command.clone()
     };
 
+    let instantiated_command = self.instantiate_arguments(
+      command_template, args, missing_arg_handler, true);
+
+    // // Instantiate all arguments
+    // // let re = Regex::new(r"\?[0-9]*").unwrap();
+    // let re = Regex::new(r"\?\[([A-Za-z0-9_]*)\]").unwrap();
+    // let out = re.replace_all(&command_template[..], |caps: &Captures|{
+    //   // let re_match = caps.get(0).unwrap().as_str();
+    //   let key = caps.get(1).unwrap().as_str();
+    //   let val = match args.get(key) {
+    //     Some(v) => v,
+    //     None => {
+    //       let prompted_val = missing_arg_handler(self, key);
+    //       // Add it to args, so we won't ask again if this argument occurs more than once
+    //       args.insert(key.to_string(), prompted_val.clone());
+    //       return prompted_val;
+    //     }
+    //   };
+    //   return format!("{}", val);
+    // });
+
+    // Simply print the result
+    println!("{}", instantiated_command);
+  }
+
+  pub fn instantiate_arguments(&self, command: String, mut args:HashMap<String, String>,
+                               missing_arg_handler:&dyn Fn(&Alias, &str) -> String,
+                               full_instantiation: bool) -> String {
     // Instantiate all arguments
-    let re = Regex::new(r"\?[0-9]*").unwrap();
-    let out = re.replace_all(&command_template[..], |caps: &Captures|{
-      let re_match = caps.get(0).unwrap().as_str();
-      let idx = re_match[1..2].parse::<usize>().unwrap();
-      let val = match args.get(idx-1) {
+    let re = Regex::new(r"\?\[([A-Za-z0-9_]*)\]").unwrap();
+    let out = re.replace_all(&command[..], |caps: &Captures|{
+      // let re_match = caps.get(0).unwrap().as_str();
+      let key = caps.get(1).unwrap().as_str();
+      let val = match args.get(key) {
         Some(v) => v,
         None => {
-          let prompted_val = missing_arg_handler(self, re_match.to_string());
+          let mut prompted_val = missing_arg_handler(self, key);
+          if prompted_val == "" && !full_instantiation {
+            prompted_val = caps.get(0).unwrap().as_str().to_string();
+          }
+          // Add it to args, so we won't ask again if this argument occurs more than once
+          args.insert(key.to_string(), prompted_val.clone());
           return prompted_val;
         }
       };
       return format!("{}", val);
     });
 
-    // Simply print the result
-    println!("{}", out);
+    return out.to_string();
   }
 
   pub fn to_string(&self, width: usize) -> String {

@@ -19,6 +19,13 @@ pub fn alias_path() -> PathBuf {
     return pwd.join(".jumpcut_test");
 }
 
+pub fn alias_shared_path() -> Option<PathBuf> {
+    match env::var("JUMPCUT_SHARED_PATH") {
+        Some(x) => Some(PathBuf::from(x)),
+        None => None
+    }
+}
+
 /// Converts a `PathBuf` path to its absolute `String` representation
 pub fn absolute_path(path: &PathBuf) -> String {
     match fs::canonicalize(path) {
@@ -70,15 +77,17 @@ pub fn usage() {
     print!("
     Jumpcut usage:
 
-    j ALIAS                       Execute the alias named ALIAS (also works by only entering parts of its name)
-    j ALIAS --- ARGS*              Execute ALIAS, using the given arguments
-    j list                        List all aliases
-    j list SEARCH                 List all aliases containing SEARCH in their name
-    j add ALIAS CMD               Adds a new alias, which executes the given command (arguments can be specified using ?1, ?2, ..)
-    j addwd ALIAS CMD             Adds a new alias, which always executes the given command from the current working directory
+    j ALIAS                       Execute the alias called ALIAS (also works by only entering parts of its name)
+    j list [SEARCH]               List all aliases (containing SEARCH in their name)
+    j add ALIAS CMD               Adds a new alias, which executes the given command (parameter syntax: ?[PARAM])
+    j addwd ALIAS CMD             Adds a new alias, which executes the given command, always from this working directory
     j addpath ALIAS [PATH]        Adds a new alias, which navigates to the given path (default path: \".\")
+    j addshr ALIAS CMD            Identical to `j add`, but stores the alias in $JUMPCUT_SHARED
     j desc ALIAS DESC             Sets the description of ALIAS to DESC
     j confirm ALIAS 0|1|2         Set alias confirmation prompt (0: none ; 1: y/n confirmation ; 2: explicit confirmation)
+    j cp ALIAS1 ALIAS2            Copies ALIAS1 to ALIAS2, and optionally fill in any parameters
     j rm ALIAS                    Removes ALIAS
+
+    Reference documentation: https://github.com/timmolderez/jumpcut-aliases/blob/master/README.md
     ")
 }

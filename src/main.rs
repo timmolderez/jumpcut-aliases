@@ -1,11 +1,15 @@
 extern crate dialoguer;
 extern crate dirs;
 extern crate regex;
+
+use std::collections::HashMap;
 use std::env;
 use std::io;
 use std::fs;
 use std::path::PathBuf;
 use dialoguer::{Confirm, Select, Input};
+use regex::Regex;
+
 mod utils;
 use utils::*;
 pub mod alias;
@@ -74,6 +78,12 @@ fn main() -> Result<(),io::Error> {
             }
         }
 
+        "cp" => {
+            if args_ok(&args, 2) {
+                copy_alias(&args[2], &args[3])?;
+            }
+        },
+
         "rm" => {
             if args_ok(&args, 1) {
                 remove_alias(&args[2])?;
@@ -81,13 +91,50 @@ fn main() -> Result<(),io::Error> {
         },
 
         _ => {
-            let arg_split_index = args.iter().position(|x| x == "---").unwrap_or_default();
+            let arg_regex = Regex::new(r"--([A-Za-z0-9_]+)=(.+)").unwrap();
+            let mut alias_args = HashMap::new();
+            let mut alias_name_parts = Vec::new();
+            for arg in args[1..].iter() {
+                match arg_regex.captures(arg) {
+                    Some(x) => {alias_args.insert(x[1].to_string(), x[2].to_string()); ()},
+                    None    => alias_name_parts.push(arg.clone())
+                }
 
-            return if arg_split_index == 0 {
-                find_and_exec_alias(args[1..].to_vec(), Vec::new())
-            } else {
-                find_and_exec_alias(args[1..arg_split_index].to_vec(), args[arg_split_index + 1..].to_vec())
+
+                // let mut match_found = false;
+                // for cap in arg_regex.captures_iter(arg) {
+                //     alias_args.insert(&cap[1], &cap[2]);
+                //     let bla = &cap[0];
+                //     match_found = true;
+                // }
+                // if !match_found  {
+                //     alias_name_parts.push(arg);
+                // }
+
+
+                // let captures = arg_regex.captures(arg).unwrap();
+                // if captures.len() == 0 {
+                //     alias_name_parts.push(arg);
+                // } else {
+                //     let capture = captures[0];
+                //     alias_args.insert(&captures[0][1], &captures[0][2]);
+                // }
             }
+            // let mut alias_name_parts = args[1..].iter().filter(
+            //     |x| {
+            //
+            //     return true;}
+            // );
+
+            find_and_exec_alias(alias_name_parts, alias_args).ok();
+
+            // let arg_split_index = args.iter().position(|x| x == "---").unwrap_or_default();
+            //
+            // return if arg_split_index == 0 {
+            //     find_and_exec_alias(args[1..].to_vec(), Vec::new())
+            // } else {
+            //     find_and_exec_alias(args[1..arg_split_index].to_vec(), args[arg_split_index + 1..].to_vec())
+            // }
         }
     };
 
@@ -141,13 +188,13 @@ fn list_aliases(alias_parts: Vec<String>) -> io::Result<()> {
 /// Given (part) of an alias name, find any matches and execute it
 /// 
 /// If there are multiple matches, ask the user to choose one.
-fn find_and_exec_alias(alias_parts: Vec<String>, args: Vec<String>) -> io::Result<()> {
+fn find_and_exec_alias(alias_parts: Vec<String>, args_map: HashMap<String, String>) -> io::Result<()> {
     // If the user entered a full alias name
     if alias_parts.len()==1 {
         let alias = &alias_parts[0];
         let path = alias_path().join(alias);
         if path.exists() {
-            exec_alias(alias, args)?;
+            exec_alias(alias, args_map)?;
             return Ok(());
         }
     }
@@ -160,7 +207,7 @@ fn find_and_exec_alias(alias_parts: Vec<String>, args: Vec<String>) -> io::Resul
             exec_nothing();
         },
         1 => {
-            exec_alias(&matches[0], args)?;
+            exec_alias(&matches[0], args_map)?;
         },
         _ => {
             let selection = Select::new()
@@ -169,22 +216,22 @@ fn find_and_exec_alias(alias_parts: Vec<String>, args: Vec<String>) -> io::Resul
                 .interact_opt()
                 .unwrap();
             if let Some(selection) = selection {
-                exec_alias(&matches[selection], args)?;
+                exec_alias(&matches[selection], args_map)?;
             }
         }
     }
     return Ok(());
 }
 
-/// If an argument value was not provided, prompt for it now
-fn missing_argument_handler(alias: &Alias, arg_name: String) -> String {
+/// If an expected argument value was not provided, prompt for it
+fn missing_argument_handler(alias: &Alias, arg_name: &str) -> String {
     let input = Input::<String>::new().with_prompt(
-        &format!("Enter a value for {} in `{}`", arg_name, alias.get_command())[..]).interact().unwrap_or_default();
+        &format!("Enter a value for ?[{}] in `{}`", arg_name, alias.get_command())[..]).interact().unwrap_or_default();
     return input
 }
 
 /// Execute the given alias, using the given arguments
-fn exec_alias(alias: &str, args: Vec<String>) -> io::Result<()> {
+fn exec_alias(alias: &str, args: HashMap<String, String>) -> io::Result<()> {
     let path = alias_path().join(alias);
     let al = Alias::read(&alias, &path)?;
     match al.get_confirmation_level(){
@@ -235,6 +282,31 @@ fn add_alias(alias: &str, cmd: &str) -> io::Result<()> {
     } else {
         return al.write(&path);
     }
+}
+
+fn copy_alias(alias_source: &str, alias_target: &str) -> io::Result<()> {
+    let path = alias_path().join(alias_source);
+    if path.exists() {
+        let al = Alias::read(&alias_source, &path)?;
+        let copied_command = al.instantiate_arguments(
+            al.get_command().to_string(), HashMap::new(),
+            &fill_in_argument_handler, false);
+        add_alias(alias_target, &copied_command).ok();
+        add_description(alias_target, al.get_description()).ok();
+        set_confirmation(alias_target, al.get_confirmation_level()).ok();
+        return Ok(());
+    } else {
+        error(&format!("There is no alias called \"{}\".", alias_source));
+        return Err(io::Error::new(io::ErrorKind::Other, "Alias does not exist."));
+    }
+}
+
+/// When copying an alias, the user can choose to fill in an argument, or not
+fn fill_in_argument_handler(alias: &Alias, arg_name: &str) -> String {
+    let input = Input::<String>::new().with_prompt(
+        &format!("Enter a value for ?[{}] in `{}` (or leave empty to keep it as an argument)",
+                 arg_name, alias.get_command())[..]).default("".to_string()).interact().unwrap_or_default();
+    return input
 }
 
 /// Add/change the description of an existing alias, and save it to file
