@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::fs;
 use std::ffi::OsStr;
 use std::env;
-use dialoguer::console::style;
+use dialoguer::console::{style, Style};
 use dialoguer::theme::ColorfulTheme;
 
 pub const JUMPCUT_SHARED_ENV_VAR: &str = "JUMPCUT_SHARED_PATH";
@@ -35,6 +35,10 @@ pub fn dialoguer_theme() -> ColorfulTheme {
         active_item_prefix: style(">".to_string()).for_stderr(),
         ..ColorfulTheme::default()
     }
+}
+
+pub fn accent_style() -> Style {
+    return Style::new().cyan();
 }
 
 /// Converts a `PathBuf` path to its absolute `String` representation

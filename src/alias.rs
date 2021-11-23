@@ -162,10 +162,11 @@ impl Alias {
       _ => ""
     };
 
+    let styled_alias = accent_style().apply_to(&self.alias);
     if self.description == "" {
-      return format!("{: <w$}  {} {}", self.alias, self.command, flags, w=width);    
+      return format!("{: <w$}  {} {}", styled_alias, self.command, flags, w=width);
     } else {
-      return format!("{: <w$}  {} {}\n{: <w$}  {}", self.alias, self.command, flags, "", self.description, w=width);
+      return format!("{: <w$}  {} {}\n{: <w$}  {}", styled_alias, self.command, flags, "", self.description, w=width);
     }
   }
 }
