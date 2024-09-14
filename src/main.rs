@@ -272,7 +272,7 @@ fn find_and_exec_alias(alias_parts: Vec<String>, args_map: HashMap<String, Strin
 /// If an expected argument value was not provided, prompt for it
 fn missing_argument_handler(alias: &Alias, arg_name: &str) -> String {
     let input = Input::<String>::new().with_prompt(
-        &format!("Enter a value for ?[{}] in `{}`", arg_name, alias.get_command())[..]).interact().unwrap_or_default();
+        &format!("Enter a value for ?[{}] in `{}`", arg_name, &alias.get_command()[..])).interact().unwrap_or_default();
     return input
 }
 
@@ -348,8 +348,7 @@ fn copy_alias(alias_source: &str, alias_target: &str, target_folder: PathBuf) ->
 /// When copying an alias, the user can choose to fill in an argument, or not
 fn fill_in_argument_handler(alias: &Alias, arg_name: &str) -> String {
     let input = Input::<String>::new().with_prompt(
-        &format!("Enter a value for ?[{}] in `{}` (or leave empty to keep it as an argument)",
-                 arg_name, alias.get_command())[..]).default("".to_string()).interact().unwrap_or_default();
+        &format!("Enter a value for ?[{}] in `{}` (or leave empty to keep it as an argument) ", arg_name, &alias.get_command()[..])).default("".to_string()).interact().unwrap_or_default();
     return input
 }
 
